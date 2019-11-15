@@ -1,4 +1,4 @@
-# shell-scripts
+# ajitabh-scripts
 A collection of quick and dirty scripts I used for routine work.
 
 ## Digital Ocean Automation
