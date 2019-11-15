@@ -34,6 +34,24 @@ function wait_for_task() {
   done
 }
 
+function validate_size() {
+  local DROPLET_NAME=$1
+  [[ -z ${DROPLET_NAME} ]] && { echo "Function validate_size: Expecting droplet name as argument";return 1;}
+
+  local NEW_SIZE=$2
+  [[ -z ${NEW_SIZE} ]] && { echo "Function validate_size: Expecting droplet size as argument";return 1;}
+
+  local CURRENT_SIZE=$(doctl compute droplet list ${DROPLET_NAME} --output json|awk -F\" '/size_slug/{print $4}')
+
+  if [ ${CURRENT_SIZE} == ${NEW_SIZE} ]
+  then
+     echo "New size is same as current size"
+     return 1
+  fi
+
+  return 0
+}
+
 function poweroff_droplet() {
   local DROPLET_ID=$1
   [[ -z ${DROPLET_ID} ]] && { echo "Function poweroff: Expecting droplet id as argument";return 1; }
@@ -148,6 +166,12 @@ DROPLET_NAME=$1
 
 NEW_SIZE=$2
 [[ -z ${NEW_SIZE} ]] && { echo "Expecting new size as argument"; print_usage; exit 1; }
+
+# Validate the current size
+if ! validate_size ${DROPLET_NAME} ${NEW_SIZE}
+then
+  exit 1
+fi
 
 # Find the droplet id of the given host name
 DROPLET_ID=$(doctl compute droplet list ${DROPLET_NAME} --no-header --format "ID")
